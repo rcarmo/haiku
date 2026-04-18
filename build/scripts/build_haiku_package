@@ -37,6 +37,11 @@ fi
 # this adds the build library dir to LD_LIBRARY_PATH
 eval "$addBuildCompatibilityLibDir"
 
+# Fallback: if rmAttrs is not set (e.g. no xattr support on host fs),
+# use plain rm instead.
+if [ -z "$rmAttrs" ] || [ ! -x "$rmAttrs" ]; then
+	rmAttrs=rm
+fi
 
 # make a clean contents dir
 packageName=`basename "$packagePath"`

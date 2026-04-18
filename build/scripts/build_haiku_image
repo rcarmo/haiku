@@ -64,6 +64,11 @@ fi
 # this adds the build library dir to LD_LIBRARY_PATH
 eval "$addBuildCompatibilityLibDir"
 
+# Fallback for missing rm_attrs on host without xattr
+if [ -z "$rmAttrs" ] || [ ! -x "$rmAttrs" ]; then
+	rmAttrs=rm
+fi
+
 # map the shell commands
 if [ $isCD ]; then
 	outputDir=$tmpDir/cdsource
