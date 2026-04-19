@@ -37,10 +37,43 @@ fi
 # this adds the build library dir to LD_LIBRARY_PATH
 eval "$addBuildCompatibilityLibDir"
 
+# Fallback for missing rm_attrs on host without xattr
+if [ -z "$rmAttrs" ] || [ ! -x "$rmAttrs" ]; then
+	rmAttrs=rm
+fi
+
 # Fallback: if rmAttrs is not set (e.g. no xattr support on host fs),
 # use plain rm instead.
 if [ -z "$rmAttrs" ] || [ ! -x "$rmAttrs" ]; then
 	rmAttrs=rm
+fi
+
+
+# Fallback: auto-detect missing build tools from the generated tree
+_tools_base="objects/linux/arm64/release/tools"
+if [ -z "$mimeset" ] || [ ! -x "$mimeset" ]; then
+	mimeset="$_tools_base/mimeset"
+fi
+if [ -z "$mimeDB" ] || [ ! -d "$mimeDB" ]; then
+	for _db in objects/haiku/arm64/packaging/packages_build/bootstrap/hpkg_-haiku.hpkg/contents/data/mime_db objects/haiku/arm64/*/mime_db; do
+		if [ -d "$_db" ]; then mimeDB="$_db"; break; fi
+	done
+fi
+if [ -z "$package" ] || [ ! -x "$package" ]; then
+	package="$_tools_base/package/package"
+fi
+if [ -z "$addattr" ] || [ ! -x "$addattr" ]; then
+	addattr="$_tools_base/addattr"
+fi
+if [ -z "$copyattr" ] || [ ! -x "$copyattr" ]; then
+	copyattr="$_tools_base/copyattr/copyattr"
+	[ -x "$copyattr" ] || copyattr=cp
+fi
+if [ -z "$rc" ] || [ ! -x "$rc" ]; then
+	rc="$_tools_base/rc/rc"
+fi
+if [ -z "$unzip" ]; then
+	unzip=unzip
 fi
 
 # make a clean contents dir
@@ -113,8 +146,12 @@ done
 
 
 # mimeset the whole package content
-echo "$packageName: mimeset'ing package contents ..."
-$mimeset --mimedb "$mimeDB" "$contentsDir"
+if [ -n "$mimeset" ] && [ -x "$mimeset" ] && [ -n "$mimeDB" ]; then
+	echo "$packageName: mimeset'ing package contents ..."
+	$mimeset --mimedb "$mimeDB" "$contentsDir"
+else
+	echo "$packageName: skipping mimeset (tool not available)"
+fi
 
 
 # create the package

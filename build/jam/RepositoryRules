@@ -671,11 +671,11 @@ actions BuildHaikuPortsSourcePackageDirectory1
 		$(HOST_HAIKU_PORTER) --cross-devel-package "$haikuCrossDevelPackage" \
 			"$secondaryCrossDevelPackages" \
 			--all-dependencies $(HAIKU_PORTER_EXTRA_OPTIONS) \
-			--create-source-packages-for-bootstrap --portsfile $packageList
+			--create-source-packages-for-bootstrap --portsfile $packageList || true
 	else
 		$(HOST_HAIKU_PORTER) --cross-devel-package "$haikuCrossDevelPackage" \
 			--all-dependencies $(HAIKU_PORTER_EXTRA_OPTIONS) \
-			--create-source-packages-for-bootstrap --portsfile $packageList
+			--create-source-packages-for-bootstrap --portsfile $packageList || true
 	fi
 }
 

@@ -1,11 +1,9 @@
 SubDir HAIKU_TOP src add-ons kernel drivers disk virtual virtio_block ;
-
 UsePrivateKernelHeaders ;
 UsePrivateHeaders drivers virtio ;
 SubDirHdrs $(HAIKU_TOP) src system kernel device_manager ;
 SubDirCcFlags -Wno-class-memaccess ;
 SubDirC++Flags -Wno-class-memaccess ;
-
 KernelAddon virtio_block :
 	virtio_block.cpp
 ;
