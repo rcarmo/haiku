@@ -716,6 +716,7 @@ Package::_Load(const PackageSettings& settings)
 {
 	// open package file
 	int fd = Open();
+	dprintf("packagefs: _Load opening %s, fd=%d\n", fFileName.Data(), fd);
 	if (fd < 0)
 		RETURN_ERROR(fd);
 	PackageCloser packageCloser(this);
