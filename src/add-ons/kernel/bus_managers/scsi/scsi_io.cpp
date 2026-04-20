@@ -28,7 +28,8 @@ scsi_requeue_request(scsi_ccb *request, bool bus_overflow)
 	SHOW_FLOW0(3, "");
 
 	if (request->state != SCSI_STATE_SENT) {
-		panic("Unsent ccb was request to requeue\n");
+		dprintf("scsi: refusing to requeue unsent ccb (state=%d)\n",
+			(int)request->state);
 		return;
 	}
 
@@ -90,7 +91,8 @@ scsi_resubmit_request(scsi_ccb *request)
 	SHOW_FLOW0(3, "");
 
 	if (request->state != SCSI_STATE_SENT) {
-		panic("Unsent ccb was asked to get resubmitted\n");
+		dprintf("scsi: refusing to resubmit unsent ccb (state=%d)\n",
+			(int)request->state);
 		return;
 	}
 
