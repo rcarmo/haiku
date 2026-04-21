@@ -3,11 +3,8 @@
  * Distributed under the terms of the MIT License.
  */
 
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "arch_elf.h"
+#include "elf_tls.h"
 #include "runtime_loader_private.h"
 
 #include <runtime_loader.h>
@@ -19,6 +16,23 @@
 #else
 #	define TRACE(x) ;
 #endif
+
+
+extern "C" addr_t
+arch_tlsdesc_resolver(Elf64_Addr* descriptor)
+{
+	Elf64_Addr encoded = descriptor[1];
+	unsigned dso = (unsigned)(encoded >> 32);
+	addr_t offset = (addr_t)(uint32)encoded;
+
+	void* address = get_tls_address(dso, offset);
+	if (address == NULL)
+		return 0;
+
+	addr_t threadPointer;
+	__asm__ __volatile__("mrs %0, tpidr_el0" : "=r"(threadPointer));
+	return (addr_t)address - threadPointer;
+}
 
 
 static status_t
@@ -69,6 +83,18 @@ relocate_rela(image_t* rootImage, image_t* image, Elf64_Rela* rel,
 			case R_AARCH64_TLS_DTPREL64:
 				relocValue = symAddr;
 				break;
+			case R_AARCH64_TLSDESC:
+			{
+				unsigned dso = symbolImage == NULL
+					? image->dso_tls_id : symbolImage->dso_tls_id;
+				addr_t offset = symAddr + rel[i].r_addend;
+
+				Elf64_Addr* descriptor = (Elf64_Addr*)relocAddr;
+				descriptor[0] = (Elf64_Addr)&arch_tlsdesc_resolver;
+				descriptor[1] = ((Elf64_Addr)dso << 32)
+					| ((Elf64_Addr)(uint32)offset);
+				continue;
+			}
 			default:
 				TRACE(("unhandled relocation type %d\n", type));
 				return B_BAD_DATA;
