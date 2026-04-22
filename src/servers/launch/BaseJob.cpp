@@ -250,10 +250,11 @@ BaseJob::_GetSourceFileEnvironment(const char* script, BStringList& environment)
 		buffer[bytesRead] = 0;
 
 		const char* chunk = buffer;
+		const char* end = buffer + bytesRead;
 		while (true) {
 			const char* separator = strchr(chunk, '\n');
 			if (separator == NULL) {
-				line.Append(chunk, bytesRead);
+				line.Append(chunk, end - chunk);
 				break;
 			}
 			line.Append(chunk, separator - chunk);
