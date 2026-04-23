@@ -5,8 +5,19 @@ UseBuildFeatureHeaders zlib ;
 
 #SEARCH_SOURCE += [ FDirName $(HAIKU_TOP) src kits interface ] ;
 
-Includes [ FGristFiles PackageItem.cpp ]
-	: [ BuildFeatureAttribute zlib : headers ] ;
+local zlibHeaders = [ BuildFeatureAttribute zlib : headers ] ;
+local zlibLibrary = [ BuildFeatureAttribute zlib : library ] ;
+if ! $(zlibHeaders) {
+	zlibHeaders = [ FDirName $(HAIKU_OUTPUT_DIR) build_packages
+		zlib_bootstrap-1.2.13-1-arm64 develop headers ] ;
+}
+if ! $(zlibLibrary) {
+	zlibLibrary = [ FDirName $(HAIKU_OUTPUT_DIR) build_packages
+		zlib_bootstrap-1.2.13-1-arm64 lib libz.so.1 ] ;
+}
+
+UseHeaders $(zlibHeaders) : true ;
+Includes [ FGristFiles PackageItem.cpp ] : $(zlibHeaders) ;
 
 Application LegacyPackageInstaller :
 	main.cpp
@@ -23,7 +34,7 @@ Application LegacyPackageInstaller :
 	UninstallWindow.cpp
 	UninstallView.cpp
 	: be localestub tracker translation shared
-		[ BuildFeatureAttribute zlib : library ]
+		$(zlibLibrary)
 		[ TargetLibsupc++ ]
 	: PackageInstaller.rdef
 ;

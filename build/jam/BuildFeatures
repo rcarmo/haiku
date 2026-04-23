@@ -44,7 +44,9 @@ if $(HAIKU_BUILD_FEATURE_SSL) {
 if $(TARGET_PACKAGING_ARCH) != x86_gcc2 {
 	local gccSyslibsPackage = gcc_syslibs ;
 	if ! [ IsPackageAvailable $(gccSyslibsPackage) ] {
-		if [ IsPackageAvailable gcc_bootstrap_syslibs ] {
+		if [ IsPackageAvailable gcc_bootstrap_syslibs ] || [ Glob
+			[ FDirName $(HAIKU_OUTPUT_DIR) build_packages ]
+			: gcc_bootstrap_syslibs-* ] {
 			gccSyslibsPackage = gcc_bootstrap_syslibs ;
 		}
 	}
@@ -68,7 +70,9 @@ if $(TARGET_PACKAGING_ARCH) != x86_gcc2 {
 
 local gccSyslibsDevelPackage = gcc_syslibs_devel ;
 if ! [ IsPackageAvailable $(gccSyslibsDevelPackage) ] {
-	if [ IsPackageAvailable gcc_bootstrap_syslibs_devel ] {
+	if [ IsPackageAvailable gcc_bootstrap_syslibs_devel ] || [ Glob
+		[ FDirName $(HAIKU_OUTPUT_DIR) build_packages ]
+		: gcc_bootstrap_syslibs_devel-* ] {
 		gccSyslibsDevelPackage = gcc_bootstrap_syslibs_devel ;
 	}
 }
@@ -141,7 +145,8 @@ if [ IsPackageAvailable icu_devel ] {
 		;
 
 	EnableBuildFeatures icu ;
-} else if [ IsPackageAvailable icu74_bootstrap_devel ] {
+} else if [ IsPackageAvailable icu74_bootstrap_devel ] || [ Glob
+	[ FDirName $(HAIKU_OUTPUT_DIR) build_packages ] : icu74_bootstrap_devel-* ] {
 	ExtractBuildFeatureArchives icu :
 		file: base icu74_bootstrap
 			runtime: lib
@@ -280,11 +285,22 @@ if [ IsPackageAvailable libvorbis_devel ] {
 
 
 # Freetype
-if [ IsPackageAvailable freetype_devel ] {
+local freetypeBasePackage = freetype ;
+local freetypeDevelPackage = freetype_devel ;
+if ! [ IsPackageAvailable $(freetypeDevelPackage) ] {
+	if [ IsPackageAvailable freetype_bootstrap_devel ] || [ Glob
+		[ FDirName $(HAIKU_OUTPUT_DIR) build_packages ]
+		: freetype_bootstrap_devel-* ] {
+		freetypeBasePackage = freetype_bootstrap ;
+		freetypeDevelPackage = freetype_bootstrap_devel ;
+	}
+}
+if [ IsPackageAvailable $(freetypeDevelPackage) ]
+	|| $(freetypeDevelPackage) = freetype_bootstrap_devel {
 	ExtractBuildFeatureArchives freetype :
-		file: base freetype
+		file: base $(freetypeBasePackage)
 			runtime: lib
-		file: devel freetype_devel
+		file: devel $(freetypeDevelPackage)
 			depends: base
 			library: $(developLibDir)/libfreetype.so
 			headers: $(developHeadersDir) $(developHeadersDir)/freetype2
@@ -415,17 +431,30 @@ if [ IsPackageAvailable libjpeg_turbo_devel ] {
 
 
 # zlib
-if [ IsPackageAvailable zlib_devel ] {
+local zlibBasePackage = zlib ;
+local zlibDevelPackage = zlib_devel ;
+local zlibSourcePackage = zlib_source ;
+if ! [ IsPackageAvailable $(zlibDevelPackage) ] {
+	if [ IsPackageAvailable zlib_bootstrap_devel ] || [ Glob
+		[ FDirName $(HAIKU_OUTPUT_DIR) build_packages ]
+		: zlib_bootstrap_devel-* ] {
+		zlibBasePackage = zlib_bootstrap ;
+		zlibDevelPackage = zlib_bootstrap_devel ;
+		zlibSourcePackage = zlib_bootstrap_source ;
+	}
+}
+if [ IsPackageAvailable $(zlibDevelPackage) ]
+	|| $(zlibDevelPackage) = zlib_bootstrap_devel {
 	ExtractBuildFeatureArchives zlib :
-		file: base zlib
+		file: base $(zlibBasePackage)
 			runtime: lib
-		file: devel zlib_devel
+		file: devel $(zlibDevelPackage)
 			depends: base
 			library: $(developLibDir)/libz.so
 			headers: $(developHeadersDir)
 		# sources are required for the primary architecture only
 		primary @{
-			file: source zlib_source
+			file: source $(zlibSourcePackage)
 				sources: develop/sources/%portRevisionedName%/sources
 		}@
 		;
@@ -442,6 +471,18 @@ if [ IsPackageAvailable libedit_devel ] {
 		file: base libedit
 			runtime: lib
 		file: devel libedit_devel
+			depends: base
+			library: $(developLibDir)/libedit.so
+			headers: $(developHeadersDir)
+		;
+
+	EnableBuildFeatures libedit ;
+} else if [ IsPackageAvailable libedit_bootstrap_devel ] || [ Glob
+	[ FDirName $(HAIKU_OUTPUT_DIR) build_packages ] : libedit_bootstrap_devel-* ] {
+	ExtractBuildFeatureArchives libedit :
+		file: base libedit_bootstrap
+			runtime: lib
+		file: devel libedit_bootstrap_devel
 			depends: base
 			library: $(developLibDir)/libedit.so
 			headers: $(developHeadersDir)
@@ -613,6 +654,18 @@ if [ IsPackageAvailable ncurses6_devel ] {
 		;
 
 	EnableBuildFeatures ncurses ;
+} else if [ IsPackageAvailable ncurses6_bootstrap_devel ] || [ Glob
+	[ FDirName $(HAIKU_OUTPUT_DIR) build_packages ] : ncurses6_bootstrap_devel-* ] {
+	ExtractBuildFeatureArchives ncurses :
+		file: base ncurses6_bootstrap
+			runtime: lib
+		file: devel ncurses6_bootstrap_devel
+			depends: base
+			library: $(developLibDir)/libncurses.so
+			headers: $(developHeadersDir)
+		;
+
+	EnableBuildFeatures ncurses ;
 } else {
 	unavailableBuildFeatures += ncurses6 ;
 }
@@ -630,23 +683,48 @@ if [ IsPackageAvailable expat_devel ] {
 		;
 
 	EnableBuildFeatures expat ;
+} else if [ IsPackageAvailable expat_bootstrap_devel ] || [ Glob
+	[ FDirName $(HAIKU_OUTPUT_DIR) build_packages ] : expat_bootstrap_devel-* ] {
+	ExtractBuildFeatureArchives expat :
+		file: base expat_bootstrap
+			runtime: lib
+		file: devel expat_bootstrap_devel
+			depends: base
+			library: $(developLibDir)/libexpat.so.1
+			headers: $(developHeadersDir)
+		;
+
+	EnableBuildFeatures expat ;
 } else {
 	unavailableBuildFeatures += expat ;
 }
 
 
 # zstd
-if [ IsPackageAvailable zstd_devel ] {
+local zstdBasePackage = zstd ;
+local zstdDevelPackage = zstd_devel ;
+local zstdSourcePackage = zstd_source ;
+if ! [ IsPackageAvailable $(zstdDevelPackage) ] {
+	if [ IsPackageAvailable zstd_bootstrap_devel ] || [ Glob
+		[ FDirName $(HAIKU_OUTPUT_DIR) build_packages ]
+		: zstd_bootstrap_devel-* ] {
+		zstdBasePackage = zstd_bootstrap ;
+		zstdDevelPackage = zstd_bootstrap_devel ;
+		zstdSourcePackage = zstd_bootstrap_source ;
+	}
+}
+if [ IsPackageAvailable $(zstdDevelPackage) ]
+	|| $(zstdDevelPackage) = zstd_bootstrap_devel {
 	ExtractBuildFeatureArchives zstd :
-		file: base zstd
+		file: base $(zstdBasePackage)
 			runtime: lib
-		file: devel zstd_devel
+		file: devel $(zstdDevelPackage)
 			depends: base
 			library: $(developLibDir)/libzstd.so
 			headers: $(developHeadersDir)
 		# sources are required for the primary architecture only
 		primary @{
-			file: source zstd_source
+			file: source $(zstdSourcePackage)
 				sources: develop/sources/%portRevisionedName%/sources
 		}@
 		;
