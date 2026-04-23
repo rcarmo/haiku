@@ -54,8 +54,6 @@ relocate_rela(image_t* rootImage, image_t* image, Elf64_Rela* rel,
 			if (status != B_OK) {
 				TRACE(("resolve symbol \"%s\" returned: %" B_PRId32 "\n",
 					SYMNAME(image, sym), status));
-				printf("resolve symbol \"%s\" returned: %" B_PRId32 "\n",
-					SYMNAME(image, sym), status);
 				return status;
 			}
 		}

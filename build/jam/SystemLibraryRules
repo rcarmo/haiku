@@ -1,3 +1,19 @@
+rule FBootstrapSyslibsPackageDir
+{
+	local packages = [ Glob [ FDirName $(HAIKU_OUTPUT_DIR) build_packages ]
+		: gcc_bootstrap_syslibs-* ] ;
+	return $(packages[1]) ;
+}
+
+
+rule FBootstrapSyslibsDevelPackageDir
+{
+	local packages = [ Glob [ FDirName $(HAIKU_OUTPUT_DIR) build_packages ]
+		: gcc_bootstrap_syslibs_devel-* ] ;
+	return $(packages[1]) ;
+}
+
+
 rule Libstdc++ForImage
 {
 	# Libstdc++ForImage
@@ -32,9 +48,14 @@ rule TargetLibstdc++ asPath
 		if $(asPath) = true {
 			flags += path ;
 		}
-		return [
-			BuildFeatureAttribute gcc_syslibs : libstdc++.so : $(flags)
-		] ;
+		local lib = [ BuildFeatureAttribute gcc_syslibs : libstdc++.so : $(flags) ] ;
+		if ! $(lib) {
+			local packageDir = [ FBootstrapSyslibsPackageDir ] ;
+			if $(packageDir) {
+				lib = [ FDirName $(packageDir) lib libstdc++.so ] ;
+			}
+		}
+		return $(lib) ;
 	}
 	# TODO: return libstdc++.so for non-Haiku target platform if needed
 }
@@ -58,9 +79,14 @@ rule TargetLibsupc++ asPath
 		if $(asPath) = true {
 			flags += path ;
 		}
-		return [
-			BuildFeatureAttribute gcc_syslibs : libstdc++.so : $(flags)
-		] ;
+		local lib = [ BuildFeatureAttribute gcc_syslibs : libstdc++.so : $(flags) ] ;
+		if ! $(lib) {
+			local packageDir = [ FBootstrapSyslibsPackageDir ] ;
+			if $(packageDir) {
+				lib = [ FDirName $(packageDir) lib libstdc++.so ] ;
+			}
+		}
+		return $(lib) ;
 	} else {
 		# TODO: return libsupc++.so for non-Haiku target platform if needed
 	}
@@ -80,9 +106,14 @@ rule TargetStaticLibsupc++ asPath
 		if $(asPath) = true {
 			flags += path ;
 		}
-		return [
-			BuildFeatureAttribute gcc_syslibs_devel : libsupc++.a : $(flags)
-		] ;
+		local lib = [ BuildFeatureAttribute gcc_syslibs_devel : libsupc++.a : $(flags) ] ;
+		if ! $(lib) {
+			local packageDir = [ FBootstrapSyslibsDevelPackageDir ] ;
+			if $(packageDir) {
+				lib = [ FDirName $(packageDir) develop lib libsupc++.a ] ;
+			}
+		}
+		return $(lib) ;
 	} else {
 		# TODO: return libsupc++.a for non-Haiku target platform if needed
 	}
@@ -171,17 +202,32 @@ rule TargetLibgcc asPath
 		}
 		if $(TARGET_PACKAGING_ARCH) = x86_gcc2 {
 			# return libgcc.a from the gcc_syslibs_devel build feature.
-			return [
-				BuildFeatureAttribute gcc_syslibs_devel : libgcc.a : $(flags)
-			] ;
+			local libgcc = [ BuildFeatureAttribute gcc_syslibs_devel : libgcc.a : $(flags) ] ;
+			if ! $(libgcc) {
+				local packageDir = [ FBootstrapSyslibsDevelPackageDir ] ;
+				if $(packageDir) {
+					libgcc = [ FDirName $(packageDir) develop lib libgcc.a ] ;
+				}
+			}
+			return $(libgcc) ;
 		} else {
 			# return libgcc_s.so from the gcc_syslibs build feature and libgcc.a
 			# from the gcc_syslibs_devel build feature.
-			return [
-				BuildFeatureAttribute gcc_syslibs : libgcc_s.so.1 : $(flags)
-			] [
-				BuildFeatureAttribute gcc_syslibs_devel : libgcc.a : $(flags)
-			] ;
+			local libgcc_s = [ BuildFeatureAttribute gcc_syslibs : libgcc_s.so.1 : $(flags) ] ;
+			if ! $(libgcc_s) {
+				local packageDir = [ FBootstrapSyslibsPackageDir ] ;
+				if $(packageDir) {
+					libgcc_s = [ FDirName $(packageDir) lib libgcc_s.so.1 ] ;
+				}
+			}
+			local libgcc = [ BuildFeatureAttribute gcc_syslibs_devel : libgcc.a : $(flags) ] ;
+			if ! $(libgcc) {
+				local packageDir = [ FBootstrapSyslibsDevelPackageDir ] ;
+				if $(packageDir) {
+					libgcc = [ FDirName $(packageDir) develop lib libgcc.a ] ;
+				}
+			}
+			return $(libgcc_s) $(libgcc) ;
 		}
 	} else {
 		# TODO: return libgcc for non-Haiku target platform if needed
@@ -202,9 +248,14 @@ rule TargetStaticLibgcc asPath
 		if $(asPath) = true {
 			flags += path ;
 		}
-		return [
-			BuildFeatureAttribute gcc_syslibs_devel : libgcc.a : $(flags)
-		] ;
+		local lib = [ BuildFeatureAttribute gcc_syslibs_devel : libgcc.a : $(flags) ] ;
+		if ! $(lib) {
+			local packageDir = [ FBootstrapSyslibsDevelPackageDir ] ;
+			if $(packageDir) {
+				lib = [ FDirName $(packageDir) develop lib libgcc.a ] ;
+			}
+		}
+		return $(lib) ;
 	} else {
 		# TODO: return libgcc.a for non-Haiku target platform if needed
 	}
@@ -336,6 +387,14 @@ rule C++HeaderDirectories architecture
 		local baseDir = [
 			BuildFeatureAttribute gcc_syslibs_devel : c++-headers : path
 		] ;
+		if ! $(baseDir) {
+			local bootstrapDevelPackages = [ Glob
+				[ FDirName $(HAIKU_OUTPUT_DIR) build_packages ]
+				: gcc_bootstrap_syslibs_devel-* ] ;
+			if $(bootstrapDevelPackages) {
+				baseDir = [ FDirName $(bootstrapDevelPackages[1]) develop headers c++ ] ;
+			}
+		}
 		if $(baseDir) {
 			c++HeaderDirs =
 				$(baseDir)
@@ -367,6 +426,14 @@ rule GccHeaderDirectories architecture
 		local baseDir = [
 			BuildFeatureAttribute gcc_syslibs_devel : gcc-headers : path
 		] ;
+		if ! $(baseDir) {
+			local bootstrapDevelPackages = [ Glob
+				[ FDirName $(HAIKU_OUTPUT_DIR) build_packages ]
+				: gcc_bootstrap_syslibs_devel-* ] ;
+			if $(bootstrapDevelPackages) {
+				baseDir = [ FDirName $(bootstrapDevelPackages[1]) develop headers gcc ] ;
+			}
+		}
 		if $(baseDir) {
 			gccHeaderDirs =
 				[ FDirName $(baseDir) include ]

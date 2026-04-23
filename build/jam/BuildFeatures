@@ -42,9 +42,16 @@ if $(HAIKU_BUILD_FEATURE_SSL) {
 # gcc_syslibs
 
 if $(TARGET_PACKAGING_ARCH) != x86_gcc2 {
-	if [ IsPackageAvailable gcc_syslibs ] {
+	local gccSyslibsPackage = gcc_syslibs ;
+	if ! [ IsPackageAvailable $(gccSyslibsPackage) ] {
+		if [ IsPackageAvailable gcc_bootstrap_syslibs ] {
+			gccSyslibsPackage = gcc_bootstrap_syslibs ;
+		}
+	}
+
+	if [ IsPackageAvailable $(gccSyslibsPackage) ] {
 		ExtractBuildFeatureArchives gcc_syslibs :
-			file: base gcc_syslibs
+			file: base $(gccSyslibsPackage)
 				libgcc_s.so.1: $(libDir)/libgcc_s.so.1
 				libstdc++.so: $(libDir)/libstdc++.so
 				libsupc++.so: $(libDir)/libsupc++.so
@@ -59,10 +66,17 @@ if $(TARGET_PACKAGING_ARCH) != x86_gcc2 {
 
 # gcc_syslibs_devel
 
-if [ IsPackageAvailable gcc_syslibs_devel ] {
+local gccSyslibsDevelPackage = gcc_syslibs_devel ;
+if ! [ IsPackageAvailable $(gccSyslibsDevelPackage) ] {
+	if [ IsPackageAvailable gcc_bootstrap_syslibs_devel ] {
+		gccSyslibsDevelPackage = gcc_bootstrap_syslibs_devel ;
+	}
+}
+
+if [ IsPackageAvailable $(gccSyslibsDevelPackage) ] {
 	if $(TARGET_PACKAGING_ARCH) = x86_gcc2 {
 		ExtractBuildFeatureArchives gcc_syslibs_devel :
-			file: base gcc_syslibs_devel
+			file: base $(gccSyslibsDevelPackage)
 				libgcc.a: $(developLibDir)/libgcc.a
 				libgcc_eh.a:
 				libgcc-kernel.a: $(developLibDir)/libgcc.a
@@ -73,7 +87,7 @@ if [ IsPackageAvailable gcc_syslibs_devel ] {
 			;
 	} else {
 		ExtractBuildFeatureArchives gcc_syslibs_devel :
-			file: base gcc_syslibs_devel
+			file: base $(gccSyslibsDevelPackage)
 				libgcc.a: $(developLibDir)/libgcc.a
 				libgcc_eh.a: $(developLibDir)/libgcc_eh.a
 				libgcc-kernel.a: $(developLibDir)/libgcc-kernel.a
@@ -117,6 +131,21 @@ if [ IsPackageAvailable icu_devel ] {
 		file: base icu74
 			runtime: lib
 		file: devel icu74_devel
+			depends: base
+			libraries:
+				$(developLibDir)/libicudata.so
+				$(developLibDir)/libicui18n.so
+				$(developLibDir)/libicuio.so
+				$(developLibDir)/libicuuc.so
+			headers: $(developHeadersDir)
+		;
+
+	EnableBuildFeatures icu ;
+} else if [ IsPackageAvailable icu74_bootstrap_devel ] {
+	ExtractBuildFeatureArchives icu :
+		file: base icu74_bootstrap
+			runtime: lib
+		file: devel icu74_bootstrap_devel
 			depends: base
 			libraries:
 				$(developLibDir)/libicudata.so

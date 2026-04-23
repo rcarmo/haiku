@@ -61,12 +61,19 @@ rule PreprocessPackageInfo source : directory : architecture
 
 	# Update requires in the package info.
 	if $(HAIKU_BUILD_TYPE) != bootstrap {
-		local updateRequiresFiles =
-			<build>update_package_requires
-			[ on <repository>HaikuPorts return $(HAIKU_REPOSITORY_CACHE_FILE) ]
-			;
-		Depends $(target) : $(updateRequiresFiles) ;
-		UpdatePackageInfoRequires $(target) : $(updateRequiresFiles) ;
+		local repositoryCache
+			= [ on <repository>HaikuPorts return $(HAIKU_REPOSITORY_CACHE_FILE) ] ;
+		if ! $(repositoryCache) {
+			repositoryCache
+				= [ on <repository>HaikuPortsCross return $(HAIKU_REPOSITORY_CACHE_FILE) ] ;
+		}
+
+		if $(repositoryCache) {
+			local updateRequiresFiles = <build>update_package_requires
+				$(repositoryCache) ;
+			Depends $(target) : $(updateRequiresFiles) ;
+			UpdatePackageInfoRequires $(target) : $(updateRequiresFiles) ;
+		}
 	}
 
 	return $(target) ;
