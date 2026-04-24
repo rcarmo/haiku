@@ -58,7 +58,7 @@ static const uint32 kDiskSystemFlags =
 #endif
 
 BTRFSAddOn::BTRFSAddOn()
-	: BDiskSystemAddOn(kPartitionTypeBTRFS, kDiskSystemFlags)
+	: BDiskSystemAddOn(kPartitionTypeBTRFS)
 {
 }
 

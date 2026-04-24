@@ -6,7 +6,9 @@ UsePrivateHeaders midi ;
 local architectureObject ;
 for architectureObject in [ MultiArchSubDirSetup ] {
 	on $(architectureObject) {
+		local midiLibrary = [ MultiArchDefaultGristFiles libmidi.so ] ;
 		if ! [ FIsBuildFeatureEnabled fluidlite ] {
+			NotFile $(midiLibrary) ;
 			continue ;
 		}
 
@@ -15,7 +17,7 @@ for architectureObject in [ MultiArchSubDirSetup ] {
 			SoftSynth.cpp Synth.cpp ]
 			: [ BuildFeatureAttribute fluidlite : headers ] ;
 
-		SharedLibrary [ MultiArchDefaultGristFiles libmidi.so ] :
+		SharedLibrary $(midiLibrary) :
 			Midi.cpp
 			MidiGlue.cpp
 			MidiPort.cpp

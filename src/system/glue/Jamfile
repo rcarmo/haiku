@@ -20,7 +20,8 @@ for architectureObject in [ MultiArchSubDirSetup ] {
 			ObjectCcFlags crtbegin.c crtend.c : -DCRT_HAS_INITFINI_ARRAY -DCRT_SHARED ;
 		}
 
-		if $(HAIKU_BUILD_TYPE) = bootstrap {
+		if $(HAIKU_BUILD_TYPE) = bootstrap
+			|| $(HAIKU_NEEDS_BOOTSTRAP_STAGE0) = 1 {
 			# build a version for stage0 of the bootstrap process
 			BootstrapStage0PlatformObjects [ FGristFiles $(sources) ] : true ;
 		}

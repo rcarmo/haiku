@@ -41,11 +41,7 @@ BootstrapPackageRepository HaikuPortsCross
 	zlib_bootstrap_devel-1.2.13-1
 	zstd_bootstrap-1.5.6-1
 	zstd_bootstrap_devel-1.5.6-1
-	bc-1.06-1
-	libedit-20191231_3.1-1
-	libedit_devel-20191231_3.1-1
 	texinfo_bootstrap-7.2-1
-	wget-1.20-1
 	:
 	# repository architecture packages (stage 2)
 	gcc_syslibs-13.3.0_2026_03_29-1

@@ -328,7 +328,11 @@ actions BootstrapRepositoryFetchPackage1
 	# don't rebuild existing package
 	package="$(1)"
 	if [ -e "$package" ]; then
-		exit 0
+		if [ -s "$package" ]; then
+			exit 0
+		fi
+
+		rm -f "$package"
 	fi
 
 	# make Haiku cross devel package path absolute

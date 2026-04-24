@@ -99,6 +99,20 @@ local repositoriesDirectory
 local repositories = HaikuPorts ;
 if $(HAIKU_BUILD_TYPE) = bootstrap {
 	repositories = HaikuPortsCross ;
+	HAIKU_NEEDS_BOOTSTRAP_STAGE0 = 1 ;
+} else {
+	local haikuPortsDirectory
+		= [ FDirName $(repositoriesDirectory) HaikuPorts ] ;
+	if ! [ Glob $(haikuPortsDirectory) : $(HAIKU_PACKAGING_ARCH) ] {
+		Echo "No HaikuPorts repository definition for" $(HAIKU_PACKAGING_ARCH)
+			"- using HaikuPortsCross fallback" ;
+		repositories = HaikuPortsCross ;
+		HAIKU_NEEDS_BOOTSTRAP_STAGE0 = 1 ;
+	}
+}
+
+if $(HAIKU_NEEDS_BOOTSTRAP_STAGE0) = 1 {
+	NotFile bootstrap_stage0 ;
 }
 
 local repository ;

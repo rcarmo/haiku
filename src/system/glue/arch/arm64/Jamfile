@@ -13,7 +13,8 @@ for architectureObject in [ MultiArchSubDirSetup arm64 ] {
 			;
 		MergeObject <$(architecture)>glue_arch_$(TARGET_ARCH).o : $(sources) ;
 
-		if $(HAIKU_BUILD_TYPE) = bootstrap {
+		if $(HAIKU_BUILD_TYPE) = bootstrap
+			|| $(HAIKU_NEEDS_BOOTSTRAP_STAGE0) = 1 {
 			# build a version for stage0 of the bootstrap process
 			BootstrapStage0PlatformObjects [ FGristFiles $(sources) ] : true ;
 		}
