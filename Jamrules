@@ -108,6 +108,11 @@ if $(HAIKU_BUILD_TYPE) = bootstrap {
 			"- using HaikuPortsCross fallback" ;
 		repositories = HaikuPortsCross ;
 		HAIKU_NEEDS_BOOTSTRAP_STAGE0 = 1 ;
+	} else if $(HAIKU_PACKAGING_ARCH) = arm64 && $(HAIKU_NO_DOWNLOADS) = 1 {
+		Echo "HaikuPorts arm64 repository needs downloaded packages - using"
+			"HaikuPortsCross fallback in no-download mode" ;
+		repositories = HaikuPortsCross ;
+		HAIKU_NEEDS_BOOTSTRAP_STAGE0 = 1 ;
 	}
 }
 

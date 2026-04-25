@@ -72,7 +72,7 @@ BootstrapPackageRepository HaikuPortsCross
 	ncurses6_bootstrap
 	python_bootstrap
 	sed_bootstrap
-	# texinfo_bootstrap
+	texinfo_bootstrap
 	zlib_bootstrap
 	zstd_bootstrap
 	:
