@@ -73,6 +73,13 @@ AddHaikuImageSystemPackages [ FFilterByBuildFeatures
 		}@
 	}@
 ] ;
+
+# The local arm64 no-download fallback path still relies on bootstrap packages
+# for some minimum-image dependencies. Make those explicit so the solver can use
+# the local HaikuPortsCross package set when building @minimum-* images.
+if $(HAIKU_PACKAGING_ARCH) = arm64 && $(HAIKU_NO_DOWNLOADS) = 1 {
+	AddHaikuImageSystemPackages noto ncurses6 zstd ;
+}
 AddHaikuImageSourcePackages [ FFilterByBuildFeatures
 	bash bc
 
