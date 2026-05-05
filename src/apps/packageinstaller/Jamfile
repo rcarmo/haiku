@@ -1,7 +1,13 @@
 SubDir HAIKU_TOP src apps packageinstaller ;
 
 UsePrivateHeaders shared interface ;
-UseBuildFeatureHeaders zlib ;
+
+# Use BuildFeatureAttribute below instead of UseBuildFeatureHeaders here. On
+# arm64 bootstrap/fallback builds, UseBuildFeatureHeaders can leave an
+# unresolved <extracted-arm64:zlib-devel> include path in the generated shell
+# command when the normal zlib_devel package is absent, which dash interprets as
+# input redirection. The explicit attributes below resolve to the available zlib
+# or zlib_bootstrap headers/library.
 
 #SEARCH_SOURCE += [ FDirName $(HAIKU_TOP) src kits interface ] ;
 
